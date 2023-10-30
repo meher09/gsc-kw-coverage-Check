@@ -1,0 +1,6 @@
+pandas
+aiohttp
+beautifulsoup4
+sentence-transformers
+tqdm
+cachetools
