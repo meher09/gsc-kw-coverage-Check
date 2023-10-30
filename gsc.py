@@ -12,6 +12,7 @@ model = SentenceTransformer('all-MiniLM-L6-v2')
 # Cache for storing webpage content
 cache = TTLCache(maxsize=1000, ttl=86400)
 
+
 # Function to compute semantic similarity
 def bert_similarity(query_embeddings, text_chunks):
     max_similarities = {query: 0 for query in query_embeddings}
@@ -21,6 +22,7 @@ def bert_similarity(query_embeddings, text_chunks):
             cos_sim = util.pytorch_cos_sim(query_embedding, chunk_embedding)
             max_similarities[query] = max(max_similarities[query], cos_sim.item())
     return max_similarities
+
 
 # Asynchronous function to fetch webpage content
 async def fetch(session, page):
@@ -43,6 +45,7 @@ async def fetch(session, page):
         print(f"General Error fetching {page}: {e}")
         return ""
 
+
 # Function to process each page
 async def process_page(page, queries, content, query_embeddings):
     print(f"Starting to process: {page}")
@@ -51,11 +54,12 @@ async def process_page(page, queries, content, query_embeddings):
         text = soup.get_text()
         text_chunks = text.split('\n')[:100]  # Limiting the text processed
         similarities = bert_similarity(query_embeddings, text_chunks)
-        results = {query: similarities[query] > 0.8 for query in queries}  # Adjust the threshold as needed
+        results = {query: similarities[query] > 0.7 for query in queries}  # Adjust the threshold as needed
         print(f"\n Finished processing: {page}")
         return results
     print(f" No content for: {page}")
     return {query: False for query in queries}
+
 
 # Main asynchronous function
 async def main(df):
@@ -71,8 +75,9 @@ async def main(df):
             all_results.update({(page, query): result for query, result in results.items()})
     return all_results
 
+
 # Load the CSV file
-df = pd.read_csv('1.csv')
+df = pd.read_csv('data.csv')
 
 # Run the main function
 page_query_results = asyncio.run(main(df))
